@@ -18,21 +18,36 @@ export default {
     return {
       message: "Wordle",
       correct: "PRANK",
-      guess: '',
-      response: ''
+      currentGuess: '',
+      guesses: [],
+      response: '',
+      count: 0
     };
   },
   created: function () { },
   methods: {
-    checkGuess: function () {
-      if (this.guess.length != 5) {
-        this.response = 'Guess must be five letters.'
-      } else if (this.guess.toUpperCase() != this.correct) {
-        this.response = 'Incorrect.'
-      } else {
-        this.response = 'You got it!'
+    checkGuess: function (guess) {
+      if (this.validateGuess(guess)) {
+        this.guesses.push(guess.toUpperCase().split(''));
+        this.count += 1
+        if (guess.toUpperCase() != this.correct) {
+          this.response = 'Incorrect.'
+        } else {
+          this.response = 'You got it!'
+        }
       }
     },
+    validateGuess: function (guess) {
+      if (this.count >= 6) {
+        this.response = `The word is ${guess}`;
+        return false;
+      } else if (guess.length != 5) {
+        this.response = 'Guess must be five letters.';
+        return false;
+      } else {
+        return true;
+      }
+    }
   }
 }
 </script>
@@ -40,12 +55,12 @@ export default {
 <template>
   <div class="home">
     <h1>{{ message }}</h1>
-    <!-- <div v-for="guess in guesses">
-      <h2>{{ guess }}</h2>
-    </div>-->
+    <div v-for="guess in guesses">
+      <span v-for="letter in guess">{{ letter }}&nbsp;</span>
+    </div>
     <p>{{ response }}</p>
-    <input v-model="guess" />
-    <button v-on:click="checkGuess()">Enter</button>
+    <input v-model="currentGuess" />
+    <button v-on:click="checkGuess(currentGuess)" type="button">Enter</button>
   </div>
 </template>
 
