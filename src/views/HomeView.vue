@@ -28,9 +28,9 @@ export default {
     return {
       message: "Wordle",
       correct: "ABCDE",
-      currentGuess: '',
-      guesses: [],
-      response: '',
+      currentGuess: '', // model for input box 
+      guesses: [],      // holds guesses as arrays of letter objects
+      response: '',     // message shown to the user
       count: 0
     };
   },
@@ -43,22 +43,26 @@ export default {
         if (guess === this.correct) {
           this.response = 'You got it!'
         }
-        let guessObject = [];
-        for (let i in guess) {
-          guessObject[i] = { letter: guess[i] }
-          if (guess[i] == this.correct[i]) {
-            guessObject[i].place = 'good'
-          } else if (
-            this.correct.includes(guess[i]) &&
-            this.correct[i] != guess[i]
-          ) {
-            guessObject[i].place = 'okay'
-          } else {
-            guessObject[i].place = 'bad'
+        let guessObjects = [];
+        let compareCorrect = this.correct.split('') // makes a copy of the correct word to check against
+        for (let i in guess) {                      // loops once to find correct letters and remove from word
+          guessObjects[i] = { char: guess[i] }
+          if (guess[i] == compareCorrect[i]) {
+            guessObjects[i].place = 'good'
+            compareCorrect.splice(i, 1, ' ')        // sets the compareCorrect letter to ' '
           }
         }
-        this.guesses.push(guessObject);
-        console.log(this.guesses);
+        for (let i in guess) {                      // loops again to check against remaining
+          if (
+            compareCorrect.includes(guess[i])
+          ) {
+            guessObjects[i].place = 'okay'
+            compareCorrect.splice(i, 1, ' ')
+          } else if (!guessObjects[i].place) {
+            guessObjects[i].place = 'bad'
+          }
+        }
+        this.guesses.push(guessObjects);
         this.count += 1
         if (this.count >= 6) {
           this.response = `The word is ${this.correct}`;
@@ -88,14 +92,13 @@ export default {
   <div class="home">
     <h1>{{ message }}</h1>
     <div v-for="guess in guesses" class="word-guess">
-      <span
-        v-for="letter in guess"
-        v-bind:class="`letter-${letter.place}`"
-      >&nbsp;{{ letter.letter }}&nbsp;</span>
+      <span v-for="letter in guess" v-bind:class="`letter-${letter.place}`">&nbsp;{{ letter.char }}&nbsp;</span>
     </div>
     <p>{{ response }}</p>
-    <input v-model="currentGuess" />
-    <button v-on:click="checkGuess(currentGuess)" type="button">Enter</button>
+    <form v-on:submit.prevent>
+      <input v-model="currentGuess" />
+      <button v-on:click="checkGuess(currentGuess)" type="submit">Enter</button>
+    </form>
   </div>
 </template>
 
