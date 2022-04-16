@@ -1,37 +1,20 @@
-<!-- 
-There is a correct word
-Allow user to enter a word
-Provide feedback as to whether that word is correct
-Guess must be five letters long
-
-Allow user to enter more guesses (up to six)
-Provide feedback as to whether each letter is correct
-
-Only allow guesses that are actually words (API call)
-
-Make each guess an object within an array, i.e.
-[ {letter: P, place: good}, 
-{letter: A, place: okay}, 
-{letter: R, place: okay},
-{letter: T, place: bad},
-{letter: Y, place: bad}   ]
-
-Loop through every letter to see if they are correct (this takes precedence)
-For each letter that is not correct, see if it exists but is in the wrong place
-
- -->
-
 <script>import axios from "axios";
 
 export default {
   data: function () {
     return {
       message: "Wordle",
-      correct: "ABCDE",
+      correct: "TORAH",
       currentGuess: '', // model for input box 
       guesses: [],      // holds guesses as arrays of letter objects
       response: '',     // message shown to the user
-      count: 0
+      count: 0,
+      keyboardLetters: [
+        [{ char: 'Q', place: 'none' }, { char: 'W', place: 'none' }, { char: 'E', place: 'none' }, { char: 'R', place: 'none' }, { char: 'T', place: 'none' }, { char: 'Y', place: 'none' }, { char: 'U', place: 'none' }, { char: 'I', place: 'none' }, { char: 'O', place: 'none' }, { char: 'P', place: 'none' }],
+        [{ char: 'A', place: 'none' }, { char: 'S', place: 'none' }, { char: 'D', place: 'none' }, { char: 'F', place: 'none' }, { char: 'G', place: 'none' }, { char: 'H', place: 'none' }, { char: 'J', place: 'none' }, { char: 'K', place: 'none' }, { char: 'L', place: 'none' }],
+        [{ char: 'Z', place: 'none' }, { char: 'X', place: 'none' }, { char: 'C', place: 'none' }, { char: 'V', place: 'none' }, { char: 'B', place: 'none' }, { char: 'N', place: 'none' }, { char: 'M', place: 'none' },]
+      ]
+
     };
   },
   created: function () { },
@@ -57,9 +40,9 @@ export default {
             compareCorrect.includes(guess[i])
           ) {
             guessObjects[i].place = 'okay'
-            compareCorrect.splice(i, 1, ' ')
+            compareCorrect.splice(compareCorrect.indexOf(guess[i]), 1, ' ')
           } else if (!guessObjects[i].place) {
-            guessObjects[i].place = 'bad'
+            guessObjects[i].place = 'none'
           }
         }
         this.guesses.push(guessObjects);
@@ -67,6 +50,7 @@ export default {
         if (this.count >= 6) {
           this.response = `The word is ${this.correct}`;
         }
+        this.updateKeyboardLetters(guessObjects);
       }
     },
     validateGuess: function (guess) {
@@ -83,6 +67,24 @@ export default {
         //   })
       }
       return true;
+    },
+    addLetter: function (letter) {
+      this.currentGuess = this.currentGuess + letter
+    },
+    updateKeyboardLetters: function (guessObjects) {
+      guessObjects.forEach(guessObject => {
+        this.keyboardLetters.forEach(row => {
+          if (row.find(item => item.char === guessObject.char)) {
+            let thisKey = row.find(item => item.char === guessObject.char)
+            if (thisKey.place === 'none') {
+              thisKey.place = guessObject.place
+            } else if (thisKey.place === 'okay' && guessObject.place == 'good') {
+              thisKey.place = guessObject.place
+            }
+          }
+        })
+      }
+      )
     }
   }
 }
@@ -91,10 +93,17 @@ export default {
 <template>
   <div class="home">
     <h1>{{ message }}</h1>
-    <div v-for="guess in guesses" class="word-guess">
-      <span v-for="letter in guess" v-bind:class="`letter-${letter.place}`">&nbsp;{{ letter.char }}&nbsp;</span>
+    <div v-for="guess in guesses" class="letter">
+      <h2> <span v-for="letter in guess" v-bind:class="`letter-${letter.place}`">&nbsp;{{ letter.char }}&nbsp;</span>
+      </h2>
     </div>
     <p>{{ response }}</p>
+    <div v-for="line in keyboardLetters">
+      <button v-for="letter in line" v-bind:class="`letter letter-${letter.place}`"
+        v-on:click="addLetter(letter.char)">{{
+          letter.char
+        }}</button>
+    </div>
     <form v-on:submit.prevent>
       <input v-model="currentGuess" />
       <button v-on:click="checkGuess(currentGuess)" type="submit">Enter</button>
@@ -103,7 +112,7 @@ export default {
 </template>
 
 <style>
-.word-guess {
+.letter {
   color: white;
   font-weight: bold;
 }
@@ -116,7 +125,11 @@ export default {
   background: gold;
 }
 
-.letter-bad {
+.letter-none {
   background: gray;
+}
+
+h2 {
+  line-height: 0.75em;
 }
 </style>
