@@ -1,4 +1,5 @@
 <script>import axios from "axios";
+import json from './processed_dictionary.json'
 
 export default {
   data: function () {
@@ -13,11 +14,12 @@ export default {
         [{ char: 'Q', place: 'none' }, { char: 'W', place: 'none' }, { char: 'E', place: 'none' }, { char: 'R', place: 'none' }, { char: 'T', place: 'none' }, { char: 'Y', place: 'none' }, { char: 'U', place: 'none' }, { char: 'I', place: 'none' }, { char: 'O', place: 'none' }, { char: 'P', place: 'none' }],
         [{ char: 'A', place: 'none' }, { char: 'S', place: 'none' }, { char: 'D', place: 'none' }, { char: 'F', place: 'none' }, { char: 'G', place: 'none' }, { char: 'H', place: 'none' }, { char: 'J', place: 'none' }, { char: 'K', place: 'none' }, { char: 'L', place: 'none' }],
         [{ char: 'Z', place: 'none' }, { char: 'X', place: 'none' }, { char: 'C', place: 'none' }, { char: 'V', place: 'none' }, { char: 'B', place: 'none' }, { char: 'N', place: 'none' }, { char: 'M', place: 'none' },]
-      ]
-
+      ],
+      dictionary: json
     };
   },
-  created: function () { },
+  created: function () {
+  },
   methods: {
     checkGuess: function (guess) {
       guess = guess.toUpperCase();
@@ -57,14 +59,10 @@ export default {
       if (guess.length != 5) {
         this.response = 'Guess must be five letters.';
         return false;
-        // } else {
-        //   axios.get(/* base url */ + guess)
-        //   .then(response => {
-        //     if (response.data[0] == '') {
-        //       return false
-        //     }
-        //     console.log(response.data);
-        //   })
+      }
+      else if (!this.dictionary[guess[0].toLowerCase()].includes(guess.toLowerCase())) {
+        this.response = 'Guess not in dictionary.';
+        return false;
       }
       return true;
     },
