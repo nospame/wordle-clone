@@ -1,26 +1,34 @@
-<script>import axios from "axios";
-import json from './processed_dictionary.json'
+<script>
+import { isLabeledStatement } from "@babel/types";
+import axios from "axios";
+import dict from './processed_dictionary.json'
 
 export default {
   data: function () {
     return {
       message: "Wordle",
-      correct: "TORAH",
+      correct: "FATAL",
       currentGuess: '', // model for input box 
       guesses: [],      // holds guesses as arrays of letter objects
       response: '',     // message shown to the user
       count: 0,
       keyboardLetters: [
-        [{ char: 'Q', place: 'none' }, { char: 'W', place: 'none' }, { char: 'E', place: 'none' }, { char: 'R', place: 'none' }, { char: 'T', place: 'none' }, { char: 'Y', place: 'none' }, { char: 'U', place: 'none' }, { char: 'I', place: 'none' }, { char: 'O', place: 'none' }, { char: 'P', place: 'none' }],
-        [{ char: 'A', place: 'none' }, { char: 'S', place: 'none' }, { char: 'D', place: 'none' }, { char: 'F', place: 'none' }, { char: 'G', place: 'none' }, { char: 'H', place: 'none' }, { char: 'J', place: 'none' }, { char: 'K', place: 'none' }, { char: 'L', place: 'none' }],
-        [{ char: 'Z', place: 'none' }, { char: 'X', place: 'none' }, { char: 'C', place: 'none' }, { char: 'V', place: 'none' }, { char: 'B', place: 'none' }, { char: 'N', place: 'none' }, { char: 'M', place: 'none' },]
+        [{ char: 'Q', place: 'light' }, { char: 'W', place: 'light' }, { char: 'E', place: 'light' }, { char: 'R', place: 'light' }, { char: 'T', place: 'light' }, { char: 'Y', place: 'light' }, { char: 'U', place: 'light' }, { char: 'I', place: 'light' }, { char: 'O', place: 'light' }, { char: 'P', place: 'light' }],
+        [{ char: 'A', place: 'light' }, { char: 'S', place: 'light' }, { char: 'D', place: 'light' }, { char: 'F', place: 'light' }, { char: 'G', place: 'light' }, { char: 'H', place: 'light' }, { char: 'J', place: 'light' }, { char: 'K', place: 'light' }, { char: 'L', place: 'light' }],
+        [{ char: 'Z', place: 'light' }, { char: 'X', place: 'light' }, { char: 'C', place: 'light' }, { char: 'V', place: 'light' }, { char: 'B', place: 'light' }, { char: 'N', place: 'light' }, { char: 'M', place: 'light' },]
       ],
-      dictionary: json
+      dictionary: dict
     };
   },
-  created: function () {
+  mounted: function () {
+    this.getCorrect()
   },
   methods: {
+    getCorrect: function () {
+      const i = Math.floor(Math.random() * this.dictionary.length)
+      this.correct = this.dictionary[i].toUpperCase()
+      console.log(this.correct)
+    },
     checkGuess: function (guess) {
       guess = guess.toUpperCase();
       if (this.validateGuess(guess)) {
@@ -33,18 +41,21 @@ export default {
         for (let i in guess) {                      // loops once to find correct letters and remove from word
           guessObjects[i] = { char: guess[i] }
           if (guess[i] == compareCorrect[i]) {
-            guessObjects[i].place = 'good'
+            guessObjects[i].place = 'success'
             compareCorrect.splice(i, 1, ' ')        // sets the compareCorrect letter to ' '
+            console.log(guess[i] + ' correct')
           }
         }
         for (let i in guess) {                      // loops again to check against remaining
           if (
-            compareCorrect.includes(guess[i])
+            compareCorrect.includes(guess[i]) && guessObjects[i].place != 'success'
           ) {
-            guessObjects[i].place = 'okay'
+            guessObjects[i].place = 'warning'
             compareCorrect.splice(compareCorrect.indexOf(guess[i]), 1, ' ')
+            console.log(guess[i] + ' close')
           } else if (!guessObjects[i].place) {
-            guessObjects[i].place = 'none'
+            guessObjects[i].place = 'secondary'
+            console.log(guess[i] + ' wrong')
           }
         }
         this.guesses.push(guessObjects);
@@ -52,7 +63,7 @@ export default {
         if (this.count >= 6) {
           this.response = `The word is ${this.correct}`;
         }
-        this.updateKeyboardLetters(guessObjects);
+        this.updateKeyboard(guessObjects);
       }
     },
     validateGuess: function (guess) {
@@ -60,23 +71,27 @@ export default {
         this.response = 'Guess must be five letters.';
         return false;
       }
-      else if (!this.dictionary[guess[0].toLowerCase()].includes(guess.toLowerCase())) {
+      else if (!this.dictionary.includes(guess.toLowerCase())) {
         this.response = 'Guess not in dictionary.';
         return false;
       }
+      this.response = '';
       return true;
     },
     addLetter: function (letter) {
       this.currentGuess = this.currentGuess + letter
     },
-    updateKeyboardLetters: function (guessObjects) {
+    backspace: function () {
+      this.currentGuess = this.currentGuess.slice(0, -1)
+    },
+    updateKeyboard: function (guessObjects) {
       guessObjects.forEach(guessObject => {
         this.keyboardLetters.forEach(row => {
           if (row.find(item => item.char === guessObject.char)) {
             let thisKey = row.find(item => item.char === guessObject.char)
-            if (thisKey.place === 'none') {
+            if (thisKey.place === 'light') {
               thisKey.place = guessObject.place
-            } else if (thisKey.place === 'okay' && guessObject.place == 'good') {
+            } else if (thisKey.place === 'warning' && guessObject.place == 'success') {
               thisKey.place = guessObject.place
             }
           }
@@ -89,45 +104,30 @@ export default {
 </script>
 
 <template>
-  <div class="home">
+  <div class="mx-auto" style="max-width: 640px">
     <h1>{{ message }}</h1>
-    <div v-for="guess in guesses" class="letter">
-      <h2> <span v-for="letter in guess" v-bind:class="`letter-${letter.place}`">&nbsp;{{ letter.char }}&nbsp;</span>
+    <div class="row" v-for="guess in guesses">
+      <h2 class="display-5 my-0"><span v-for="letter in guess" v-bind:class="`badge bg-${letter.place} m-1 px-0`"
+          style="width: 1.75em">{{
+              letter.char
+          }}</span>
       </h2>
     </div>
     <p>{{ response }}</p>
     <div v-for="line in keyboardLetters">
-      <button v-for="letter in line" v-bind:class="`letter letter-${letter.place}`"
+      <button v-for="letter in line" v-bind:class="`btn btn-${letter.place} m-1 px-0`" style="width: 1.75em"
         v-on:click="addLetter(letter.char)">{{
-          letter.char
+            letter.char
         }}</button>
     </div>
     <form v-on:submit.prevent>
-      <input v-model="currentGuess" />
-      <button v-on:click="checkGuess(currentGuess)" type="submit">Enter</button>
+      <button type="submit" v-on:click="checkGuess(currentGuess)" class="btn btn-light m-1 px-0"
+        style="width: 3em">Enter</button>
+      <input v-model="currentGuess" class="m-1" />
+      <button class="btn btn-light m-1 px-0" v-on:click="backspace()" style="width: 3em">&#9003;</button>
     </form>
   </div>
 </template>
 
 <style>
-.letter {
-  color: white;
-  font-weight: bold;
-}
-
-.letter-good {
-  background: green;
-}
-
-.letter-okay {
-  background: gold;
-}
-
-.letter-none {
-  background: gray;
-}
-
-h2 {
-  line-height: 0.75em;
-}
 </style>
