@@ -27,6 +27,7 @@ export default {
     getCorrect: function () {
       const i = Math.floor(Math.random() * this.dictionary.length)
       this.correct = this.dictionary[i].toUpperCase()
+      console.log(this.correct)
     },
     checkGuess: function (guess) {
       guess = guess.toUpperCase();
@@ -59,7 +60,7 @@ export default {
         }
         this.guesses.push(guessObjects);
         this.count += 1
-        if (this.count >= 6) {
+        if (this.count >= 6 && guess != this.correct) {
           this.response = `The word is ${this.correct}`;
         }
         this.updateKeyboard(guessObjects);
