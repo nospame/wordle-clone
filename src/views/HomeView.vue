@@ -6,8 +6,8 @@ import dict from './processed_dictionary.json'
 export default {
   data: function () {
     return {
-      message: "Wordle",
-      correct: "FATAL",
+      message: "(not) Wordle",
+      correct: "WORDS",
       currentGuess: '', // model for input box 
       guesses: [],      // holds guesses as arrays of letter objects
       response: '',     // message shown to the user
@@ -27,7 +27,6 @@ export default {
     getCorrect: function () {
       const i = Math.floor(Math.random() * this.dictionary.length)
       this.correct = this.dictionary[i].toUpperCase()
-      console.log(this.correct)
     },
     checkGuess: function (guess) {
       guess = guess.toUpperCase();
