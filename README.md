@@ -1,4 +1,6 @@
-# wordle-clone
+# Nospame's (not) Wordle
+
+Find me online at: https://nospame-not-wordle.netlify.app/
 
 ## Project setup
 ```
