@@ -1,6 +1,4 @@
 <script>
-import { isLabeledStatement } from "@babel/types";
-import axios from "axios";
 import dict from './processed_dictionary.json'
 
 export default {
@@ -10,14 +8,13 @@ export default {
       correct: "WORDS",
       currentGuess: '', // model for input box 
       guesses: [],      // holds guesses as arrays of letter objects
-      response: '',     // message shown to the user
+      notify: '',     // message shown to the user
       count: 0,
       keyboardLetters: [
         [{ char: 'Q', place: 'light' }, { char: 'W', place: 'light' }, { char: 'E', place: 'light' }, { char: 'R', place: 'light' }, { char: 'T', place: 'light' }, { char: 'Y', place: 'light' }, { char: 'U', place: 'light' }, { char: 'I', place: 'light' }, { char: 'O', place: 'light' }, { char: 'P', place: 'light' }],
         [{ char: 'A', place: 'light' }, { char: 'S', place: 'light' }, { char: 'D', place: 'light' }, { char: 'F', place: 'light' }, { char: 'G', place: 'light' }, { char: 'H', place: 'light' }, { char: 'J', place: 'light' }, { char: 'K', place: 'light' }, { char: 'L', place: 'light' }],
         [{ char: 'Z', place: 'light' }, { char: 'X', place: 'light' }, { char: 'C', place: 'light' }, { char: 'V', place: 'light' }, { char: 'B', place: 'light' }, { char: 'N', place: 'light' }, { char: 'M', place: 'light' },]
-      ],
-      dictionary: dict
+      ]
     };
   },
   mounted: function () {
@@ -25,8 +22,8 @@ export default {
   },
   methods: {
     getCorrect: function () {
-      const i = Math.floor(Math.random() * this.dictionary.length)
-      this.correct = this.dictionary[i].toUpperCase()
+      const i = Math.floor(Math.random() * dict.length)
+      this.correct = dict[i].toUpperCase()
       console.log(this.correct)
     },
     checkGuess: function (guess) {
@@ -34,7 +31,7 @@ export default {
       if (this.validateGuess(guess)) {
         this.currentGuess = '';
         if (guess === this.correct) {
-          this.response = 'You got it!'
+          this.notify = 'You got it!'
         }
         let guessObjects = [];
         let compareCorrect = this.correct.split('') // makes a copy of the correct word to check against
@@ -61,21 +58,21 @@ export default {
         this.guesses.push(guessObjects);
         this.count += 1
         if (this.count >= 6 && guess != this.correct) {
-          this.response = `The word is ${this.correct}`;
+          this.notify = `The word is ${this.correct}`;
         }
         this.updateKeyboard(guessObjects);
       }
     },
     validateGuess: function (guess) {
       if (guess.length != 5) {
-        this.response = 'Guess must be five letters.';
+        this.notify = 'Guess must be five letters.';
         return false;
       }
-      else if (!this.dictionary.includes(guess.toLowerCase())) {
-        this.response = 'Guess not in dictionary.';
+      else if (!dict.includes(guess.toLowerCase())) {
+        this.notify = 'Guess not in dictionary.';
         return false;
       }
-      this.response = '';
+      this.notify = '';
       return true;
     },
     addLetter: function (letter) {
@@ -98,34 +95,56 @@ export default {
         })
       }
       )
+    },
+    newGame: function () {
+      this.count = 0
+      this.guesses = []
+      this.notify = ''
+      this.getCorrect()
+      this.keyboardLetters.forEach(row => {
+        row.forEach(letter => { letter.place = 'light' })
+      })
     }
   }
 }
 </script>
 
 <template>
-  <div class="mx-auto" style="max-width: 640px">
-    <h1>{{ message }}</h1>
-    <div class="row" v-for="guess in guesses">
-      <h2 class="display-5 my-0"><span v-for="letter in guess" v-bind:class="`badge bg-${letter.place} m-1 px-0`"
+  <div class="mx-auto" style="max-width: 640px; min-width: 400px; text-align: center;">
+
+    <div id="header">
+      <h1>{{ message }} <button class="btn btn-light btn-sm" v-on:click="newGame()">&#8635;</button></h1>
+    </div>
+
+    <div class="row" v-for="guess in guesses" id="guesses">
+      <h2 class="display-4 my-0"><span v-for="letter in guess" v-bind:class="`badge bg-${letter.place} m-1 px-0`"
           style="width: 1.75em">{{
               letter.char
           }}</span>
       </h2>
     </div>
-    <p>{{ response }}</p>
-    <div v-for="line in keyboardLetters">
-      <button v-for="letter in line" v-bind:class="`btn btn-${letter.place} m-1 px-0`" style="width: 1.75em"
-        v-on:click="addLetter(letter.char)">{{
-            letter.char
-        }}</button>
+
+    <div id="notification">
+      <p>{{ notify }}</p>
     </div>
-    <form v-on:submit.prevent>
-      <button type="submit" v-on:click="checkGuess(currentGuess)" class="btn btn-light m-1 px-0"
-        style="width: 3em">Enter</button>
-      <input v-model="currentGuess" class="m-1" />
-      <button class="btn btn-light m-1 px-0" v-on:click="backspace()" style="width: 3em">&#9003;</button>
-    </form>
+
+    <div id="keyboard">
+      <div v-for="line in keyboardLetters">
+        <button v-for="letter in line" v-bind:class="`btn btn-${letter.place} m-1 px-0`" style="width: 1.75em"
+          v-on:click="addLetter(letter.char)">{{
+              letter.char
+          }}</button>
+      </div>
+
+      <div class="row" id="controls">
+        <form v-on:submit.prevent>
+          <button type="submit" v-on:click="checkGuess(currentGuess)" class="btn btn-light m-1 px-0"
+            style="width: 3em">Enter</button>
+          <input v-model="currentGuess" style="font-size: large" />
+          <button class="btn btn-light m-1 px-0" v-on:click="backspace()" style="width: 3em">&#9003;</button>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
