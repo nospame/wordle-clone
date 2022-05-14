@@ -1,5 +1,5 @@
 <template>
-  <div class="container-sm">
+  <div class="container-sm" id="game">
     <router-view />
   </div>
 </template>

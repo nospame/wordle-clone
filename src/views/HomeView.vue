@@ -11,14 +11,16 @@ export default {
       guesses: [],      // holds guesses as arrays of letter objects
       notify: '',     // message shown to the user
       count: 0,
+      default: 'light',
       keyboardLetters: [
-        [{ char: 'Q', place: 'light' }, { char: 'W', place: 'light' }, { char: 'E', place: 'light' }, { char: 'R', place: 'light' }, { char: 'T', place: 'light' }, { char: 'Y', place: 'light' }, { char: 'U', place: 'light' }, { char: 'I', place: 'light' }, { char: 'O', place: 'light' }, { char: 'P', place: 'light' }],
-        [{ char: 'A', place: 'light' }, { char: 'S', place: 'light' }, { char: 'D', place: 'light' }, { char: 'F', place: 'light' }, { char: 'G', place: 'light' }, { char: 'H', place: 'light' }, { char: 'J', place: 'light' }, { char: 'K', place: 'light' }, { char: 'L', place: 'light' }],
-        [{ char: 'Z', place: 'light' }, { char: 'X', place: 'light' }, { char: 'C', place: 'light' }, { char: 'V', place: 'light' }, { char: 'B', place: 'light' }, { char: 'N', place: 'light' }, { char: 'M', place: 'light' },]
-      ]
+        [{ char: 'Q' }, { char: 'W' }, { char: 'E' }, { char: 'R' }, { char: 'T' }, { char: 'Y' }, { char: 'U' }, { char: 'I' }, { char: 'O' }, { char: 'P' }],
+        [{ char: 'A' }, { char: 'S' }, { char: 'D' }, { char: 'F' }, { char: 'G' }, { char: 'H' }, { char: 'J' }, { char: 'K' }, { char: 'L' }],
+        [{ char: 'Z' }, { char: 'X' }, { char: 'C' }, { char: 'V' }, { char: 'B' }, { char: 'N' }, { char: 'M' }]
+      ],
     };
   },
   mounted: function () {
+    this.setKeyboard()
     this.getCorrect()
   },
   methods: {
@@ -87,7 +89,7 @@ export default {
         this.keyboardLetters.forEach(row => {
           if (row.find(item => item.char === guessObject.char)) {
             let thisKey = row.find(item => item.char === guessObject.char)
-            if (thisKey.place === 'light') {
+            if (thisKey.place === this.default) {
               thisKey.place = guessObject.place
             } else if (thisKey.place === 'warning' && guessObject.place == 'success') {
               thisKey.place = guessObject.place
@@ -101,9 +103,16 @@ export default {
       this.count = 0
       this.guesses = []
       this.notify = ''
+      this.setKeyboard()
       this.getCorrect()
+    },
+    changeDefault: function () {
+      this.default = this.default === 'light' ? 'dark' : 'light'
+      console.log(this.default)
+    },
+    setKeyboard: function () {
       this.keyboardLetters.forEach(row => {
-        row.forEach(letter => { letter.place = 'light' })
+        row.forEach(letter => { letter.place = this.default })
       })
     }
   }
@@ -112,7 +121,7 @@ export default {
 
 <template>
   <div class="mx-auto" style="max-width: 640px; min-width: 400px; text-align: center;">
-
+    <!-- <button v-on:click="changeDefault">CHANGE TO DARK</button> -->
     <div id="header">
       <h1>{{ message }} <button class="btn btn-light btn-sm" v-on:click="newGame()">&#8635;</button></h1>
     </div>
@@ -149,5 +158,10 @@ export default {
   </div>
 </template>
 
-<style>
+<style lang="scss">
+#game {
+  .btn-light {
+    background-color: #d3d6da;
+  }
+}
 </style>
