@@ -1,5 +1,6 @@
 <script>
-import dict from './processed_dictionary.json'
+import validGuesses from './valid_guesses.json'
+import validSolutions from './valid_solutions.json'
 
 export default {
   data: function () {
@@ -22,8 +23,8 @@ export default {
   },
   methods: {
     getCorrect: function () {
-      const i = Math.floor(Math.random() * dict.length)
-      this.correct = dict[i].toUpperCase()
+      const i = Math.floor(Math.random() * validSolutions.length)
+      this.correct = validSolutions[i].toUpperCase()
       console.log(this.correct)
     },
     checkGuess: function (guess) {
@@ -68,7 +69,7 @@ export default {
         this.notify = 'Guess must be five letters.';
         return false;
       }
-      else if (!dict.includes(guess.toLowerCase())) {
+      else if (!validGuesses.includes(guess.toLowerCase())) {
         this.notify = 'Guess not in dictionary.';
         return false;
       }
