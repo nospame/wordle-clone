@@ -1,6 +1,6 @@
 <script>
-import validGuesses from './valid_guesses.json'
-import validSolutions from './valid_solutions.json'
+import validGuesses from '../assets/valid_guesses.json'
+import validSolutions from '../assets/valid_solutions.json'
 
 export default {
   data: function () {
@@ -71,7 +71,9 @@ export default {
         this.notify = 'Guess must be five letters.';
         return false;
       }
-      else if (!validGuesses.includes(guess.toLowerCase())) {
+      else if (
+        !validGuesses.includes(guess.toLowerCase())
+        && !validSolutions.includes(guess.toLowerCase())) {
         this.notify = 'Guess not in dictionary.';
         return false;
       }
